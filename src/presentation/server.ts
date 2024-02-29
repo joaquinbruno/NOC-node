@@ -1,16 +1,21 @@
-import { CheckService } from "../domain/use-cases/checks/check-service";
 import { FileSystemDatasource } from "../infrastructure/datasources/file-system.datasources";
-import { LogRepositoryImpl } from "../infrastructure/repositories/log.repository.impl";
+import { LogRepositoryImpl } from '../infrastructure/repositories/log.repository.impl';
 import { CronService } from "./cron/cron-service"
-import { envs } from "../config/plugins/envs.plugin";
 import { EmailService } from './email/email-service';
-import { SendEmailLogs } from "../domain/use-cases/email/send-mail-logs";
 import { MongoLogDataSource } from "../infrastructure/datasources/mongo-log.datasource.ts";
-import { LogSeverityLevel } from "../domain/entities/log.entity";
+import { PostgressLogDatasource } from "../infrastructure/datasources/postgre-log.datasource";
+import { CheckServiceMultiple } from "../domain/use-cases/checks/check-service-multiple";
 
-const logRepository = new LogRepositoryImpl(
+const fsLogRepository = new LogRepositoryImpl(
     new FileSystemDatasource(),
-    // new MongoLogDataSource()
+)
+
+const mongoLogRePository = new LogRepositoryImpl(
+    new MongoLogDataSource(),
+)
+
+const postgresLogRepository = new LogRepositoryImpl(
+    new PostgressLogDatasource()
 )
 
 const emailService = new EmailService();
@@ -20,8 +25,8 @@ export class Server {
 
     public static async start(){
         console.log('Server started..')
-        const logs = await logRepository.getLogs(LogSeverityLevel.low);
-        console.log(logs)
+        // const logs = await logRepository.getLogs(LogSeverityLevel.low);
+        // console.log(logs)
         // :D Hi!
 
     //    new SendEmailLogs(
@@ -35,9 +40,9 @@ export class Server {
         //     '*/5 * * * * *',
         //     () => {
 
-        //         const url = 'http://asdasddsa.com';
-        //         new CheckService(
-        //             logRepository,
+        //         const url = 'http://google.com';
+        //         new CheckServiceMultiple(
+        //             [fsLogRepository, postgresLogRepository, mongoLogRePository],
         //             () => console.log( `${url} is ok`),
         //             ( error) => console.log( error ),
 
